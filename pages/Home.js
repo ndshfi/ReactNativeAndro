@@ -65,14 +65,14 @@ const Home = () => {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4cd964" />
-        <Text style={{ marginTop: 10 }}>Loading...</Text>
+        <Text style={{ marginTop: 10 }}>Loading Data...</Text>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={{ fontSize: 20 }}>Nilai yang diketikkan: {search}</Text>
+      {/* <Text style={{ fontSize: 20 }}>Nilai yang diketikkan: {search}</Text> */}
       <FlatList
         data={filterTasks}
         keyExtractor={(item) => item.id}
