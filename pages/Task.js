@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert } from "react-native";
+import DropDownPicker from 'react-native-dropdown-picker';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Platform, Pressable } from 'react-native';
@@ -13,6 +14,7 @@ import{
     View
 } from "react-native";
 import { Picker } from '@react-native-picker/picker';
+import axios from "axios";
 
 const Task = ({ navigation }) => {
     const [id,setId]=useState("");
@@ -20,6 +22,15 @@ const Task = ({ navigation }) => {
 const [date, setDate] = useState(new Date());
     const [status,setStatus]=useState("");
 const [showPicker, setShowPicker] = useState(false);
+const [open, setOpen] = useState(false);
+
+
+const [items, setItems] = useState([
+  { label: '-- Select Status --', value: '' },
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Completed', value: 'Completed' }
+]);
+
 
      const styles =StyleSheet.create({
         container:{flex:1,backgroundColor: "#fff",paddingHorizontal:20},
@@ -41,21 +52,42 @@ const [showPicker, setShowPicker] = useState(false);
   if (selectedDate) setDate(selectedDate);
 };
 
-    const saveTask=()=>{
+function formatDateToMySQL(date) {
+  const pad = (n) => (n < 10 ? '0' + n : n);
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+    const saveTask=async()=>{
         if(!id||!task||!date||!status){
                     console.log("Please fill in all fields! ");
   Alert.alert("Validation Error", "Please fill in all fields");
             return;
         }
+        const formattedDate = formatDateToMySQL(date);
+
         const newTask={
             id,
             task,
-            date,
+            date:formattedDate,
             status,
         };
+console.log("Sending newTask:",newTask);
+
+        try{
+            const response = await axios.post(
+                "http://10.1.48.40:8080/Tasks",
+                newTask
+            );
         console.log("Task saved! ",newTask);
+          Alert.alert("Success", "Task saved!");
         navigation.goBack();
-    }
+        }catch (error){
+            console.log("Failed to save task: ", error.message);
+              Alert.alert("Validation Error", "Failed to save task");
+        }
+    
+    };
+
     return(
         <SafeAreaView style={styles.container}>
             <Text style={styles.label}>ID: </Text>
@@ -89,20 +121,35 @@ const [showPicker, setShowPicker] = useState(false);
   />
 )}
 
-            <Text style={styles.label}>Status: </Text>
-            <View style={styles.input}>
-            <Picker
-                selectedValue={status}
-                onValueChange={(itemValue) => setStatus(itemValue)}
-            >
-                <Picker.Item label="-- Select Status --" value="" />
-                <Picker.Item label="Pending" value="Pending" />
-                <Picker.Item label="Completed" value="Completed" />
-            </Picker>
-            </View>
+           <Text style={styles.label}>Status: </Text>
+<View style={{ marginHorizontal: 10 }}>
+  <DropDownPicker
+    open={open}
+    value={status}
+    items={[
+      { label: '-- Select Status --', value: '' },
+      { label: 'Pending', value: 'Pending' },
+      { label: 'Completed', value: 'Completed' }
+    ]}
+    setOpen={setOpen}
+    setValue={setStatus}
+    setItems={() => {}}
+    placeholder="-- Select Status --"
+    style={{ height: 40, borderColor: '#ccc', borderRadius: 5 }}
+    dropDownContainerStyle={{ borderColor: '#ccc' }}
+    textStyle={{ fontSize: 14 }}
+  />
+</View>
+
+
+
 
 <View style={{ color:"#000000", marginHorizontal: 10, marginTop: 20 }}>
-  <Button title="Save Task" onPress={saveTask} />
+<Button
+  title="Save Task"
+  onPress={saveTask}
+  color="#007bff" 
+/>
 </View>
         </SafeAreaView>
     );
