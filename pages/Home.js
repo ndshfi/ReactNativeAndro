@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Alert,
   View,
   Text,
   TextInput,
@@ -79,6 +80,48 @@ const Home = ({navigation}) => {
     );
   }
 
+  const deleteConfir = async (iddelete)=>{
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this task?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Yes, Delete",
+          onPress: () => {
+            Alert.alert(
+              "Final Confirmation",
+              "This action cannot be undone. Do you really want to delete?",
+              [
+                {
+                  text: "No",
+                  style: "cancel"
+                },
+                {
+                  text: "Delete",
+                  style: "destructive",
+                  onPress: async () => {
+                    try {
+                      await axios.delete(`http://10.1.48.40:8080/Tasks/${iddelete}`);
+                      Alert.alert("Deleted", "Task deleted successfully");
+                      navigation.goBack();
+                    } catch (error) {
+                      Alert.alert("Error", "Failed to delete task: ",error);
+                      console.log("Failed to delete task: ",error);
+                    }
+                  }
+                }
+              ]
+            );
+          }
+        }
+      ]
+    );
+  };
+
 const deleteTask = async (iddelete)=>{
   try{
 await axios.delete(`http://10.1.48.40:8080/Tasks/${iddelete}`);
@@ -100,10 +143,11 @@ const renderRightActions = () => {
         height: "100%",
       }}
     >
-      <Text style={{ color: "white" }}>Delete</Text>
+      <Text onPress={deleteConfir} style={{ color: "white" }}>Delete</Text>
     </View>
   );
 };
+
 
 
   return (
@@ -126,7 +170,7 @@ const renderRightActions = () => {
         }
         renderItem={({ item }) => (
 <Swipeable
-  onSwipeableOpen={() => deleteTask(item.id)}
+  onSwipeableOpen={() => deleteConfir(item.id)}
   renderRightActions={renderRightActions}
 >
           <TouchableOpacity
