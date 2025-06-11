@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 
@@ -16,7 +16,31 @@ import{
 import { Picker } from '@react-native-picker/picker';
 import axios from "axios";
 
-const Task = ({ navigation }) => {
+const Task = ({ navigation,route }) => {
+const editMode = route?.params?.editMode ?? false;
+const idupdate = route?.params?.idupdate ?? false;
+
+const fetchData = async () => {
+  try{
+    const response = 
+await axios.get(`http://10.1.48.40:8080/Taskss/${idupdate}`);
+    console.log("Data task: ", response.data);
+    setId(String(response.data.id));
+    setTask(response.data.task);
+    setStatus(response.data.status);
+    setDate(response.data.date);
+  }catch(error){
+    console.log("Failed to fetch task update: ", error.message);
+  }
+};
+
+useEffect(()=>{
+  if(editMode){
+    console.log("Opened in edit mode id: ",idupdate);
+    fetchData();
+  }
+},[]);
+
     const [id,setId]=useState("");
     const [task,setTask]=useState("");
 const [date, setDate] = useState(new Date());
@@ -66,38 +90,67 @@ function formatDateToMySQL(date) {
         const formattedDate = formatDateToMySQL(date);
 
         const newTask={
-            id,
+            id:Number(id),
             task,
             date:formattedDate,
             status,
         };
 console.log("Sending newTask:",newTask);
 
-        try{
-            const response = await axios.post(
-                "http://10.1.48.40:8080/Tasks",
-                newTask
-            );
-        console.log("Task saved! ",newTask);
-          Alert.alert("Success", "Task saved!");
-        navigation.goBack();
-        }catch (error){
-            console.log("Failed to save task: ", error.message);
-              Alert.alert("Validation Error", "Failed to save task");
-        }
+       try {
+  let response;
+  if (editMode) {
+    console.log("Sending PUT request to backend with:", newTask);
+
+    response = await axios.put(
+      "http://10.1.48.40:8080/Tasks",
+      newTask
+    );
+
+    console.log("PUT response:", response.data);
+  } else {
+    console.log("Sending POST request to backend with:", newTask);
+
+    response = await axios.post(
+      "http://10.1.48.40:8080/Tasks",
+      newTask
+    );
+
+    console.log("POST response:", response.data);
+  }
+
+  console.log("Task saved!", newTask);
+  Alert.alert("Success", "Task saved!");
+  navigation.goBack();
+
+} catch (error) {
+  // Tambahkan info lengkap error dari axios
+  console.log("Failed to save task:");
+  console.log("Message:", error.message);
+  console.log("Status:", error.response?.status);
+  console.log("Data:", error.response?.data);
+
+  Alert.alert(
+    "Error",
+    `(${error.response?.status || 'Unknown'}) ${error.response?.data?.message || error.message}`
+  );
+}
+
     
     };
 
     return(
         <SafeAreaView style={styles.container}>
             <Text style={styles.label}>ID: </Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Enter ID"
-            value={id}
-            onChangeText={setId}
-            keyboardType="numeric"
-            />
+           <TextInput
+  style={[styles.input, editMode && { backgroundColor: '#f0f0f0' }]}
+  placeholder="Enter ID"
+  value={id}
+  onChangeText={setId}
+  keyboardType="numeric"
+  editable={!editMode}
+/>
+
 
             <Text style={styles.label}>Task Name: </Text>
             <TextInput
@@ -109,7 +162,7 @@ console.log("Sending newTask:",newTask);
 
              <Text style={styles.label}>Date: </Text>
 <Pressable onPress={() => setShowPicker(true)} style={styles.input}>
-  <Text>{date.toLocaleString()}</Text>
+<Text>{date ? date.toLocaleString() : 'Pilih tanggal'}</Text>
 </Pressable>
 
 {showPicker && (
@@ -147,9 +200,14 @@ console.log("Sending newTask:",newTask);
 <View style={{ color:"#000000", marginHorizontal: 10, marginTop: 20 }}>
 <Button
   title="Save Task"
-  onPress={saveTask}
+  onPress={() => {
+    console.log("Save button pressed");
+      console.log("editMode:", editMode);  // Tambahkan ini!
+    saveTask();
+  }}
   color="#007bff" 
 />
+
 </View>
         </SafeAreaView>
     );

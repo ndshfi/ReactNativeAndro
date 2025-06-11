@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import { Swipeable } from "react-native-gesture-handler";
 
-const Home = () => {
+const Home = ({navigation}) => {
   const [tasks, setTasks] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -78,6 +79,33 @@ const Home = () => {
     );
   }
 
+const deleteTask = async (iddelete)=>{
+  try{
+await axios.delete(`http://10.1.48.40:8080/Tasks/${iddelete}`);
+
+    // console.log("Data task: ",response.data);
+  }catch(error){
+    console.log("Failed to fetch task delete: ",error.message);
+  }
+}
+
+const renderRightActions = () => {
+  return (
+    <View
+      style={{
+        backgroundColor: "red",
+        justifyContent: "center",
+        alignItems: "center",
+        width: 80,
+        height: "100%",
+      }}
+    >
+      <Text style={{ color: "white" }}>Delete</Text>
+    </View>
+  );
+};
+
+
   return (
     <SafeAreaView style={styles.container}>
       {/* <Text style={{ fontSize: 20 }}>Nilai yang diketikkan: {search}</Text> */}
@@ -97,8 +125,16 @@ const Home = () => {
           </>
         }
         renderItem={({ item }) => (
+<Swipeable
+  onSwipeableOpen={() => deleteTask(item.id)}
+  renderRightActions={renderRightActions}
+>
           <TouchableOpacity
             onPress={() => {
+              navigation.navigate("Task",{
+                editMode:true,
+                idupdate:item.id,
+            });
               console.log(item.task);
             }}
           >
@@ -120,6 +156,7 @@ const Home = () => {
               </View>
             </View>
           </TouchableOpacity>
+          </Swipeable>
         )}
       />
     </SafeAreaView>
