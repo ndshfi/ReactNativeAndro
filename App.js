@@ -13,13 +13,15 @@ import Task from './pages/Task';
 import Summary from './pages/Summary';
 import Pending from './pages/Pending';
 import Completed from './pages/Completed';
+import IndexSalaries from "./pages/indexSalaries";
 
 import ContactHome from './pages/kontak';
 import ContactDetail from './pages/detail';
 
 import Controller from './pages/Controller';
 import Rumah from './pages/Rumah';
-
+import Salaries from './pages/Salaries';
+import Login from './pages/Login';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,7 +30,7 @@ const Drawer = createDrawerNavigator();
 function TabNavigator() {
   return (
     <Tab.Navigator>
-<Tab.Screen
+{/* <Tab.Screen
   name="HomeTab"
   component={Home}
   options={({ navigation }) => ({
@@ -46,25 +48,27 @@ function TabNavigator() {
     ),
     headerTitle: 'To Do',
   })}
-/>
+/> */}
+
+
 
     <Tab.Screen
-  name="SummaryTab"
-  component={Summary}
+  name="IndexSalaries"
+  component={IndexSalaries}
   options={({ navigation }) => ({
-    title: "Rumah",
+    title: "Salaries",
     tabBarIcon: ({ color, size }) => (
       <Ionicons name="home" color={color} size={size} />
     ),
     headerRight: () => (
       <TouchableOpacity
-        onPress={() => navigation.navigate('Rumah')}
+        onPress={() => navigation.navigate('Salaries')}
         style={{ marginRight: 15 }}
       >
         <Ionicons name="add" size={28} color="#007AFF" />
       </TouchableOpacity>
     ),
-    headerTitle: 'Rumah',
+    headerTitle: 'Salaries',
   })}
 />
 
@@ -72,10 +76,18 @@ function TabNavigator() {
   );
 }
 
-
 function DrawerNavigator() {
   return (
     <Drawer.Navigator>
+      <Drawer.Screen 
+        name="Login" 
+        component={Login} 
+        options={{ 
+          title: "Login",
+          headerLeft: () => null,
+          swipeEnabled: false
+        }} 
+      />
       <Drawer.Screen name="MainTabs" component={TabNavigator} options={{ title: "Main" }} />
       <Drawer.Screen name="Image" component={Pending} />
       <Drawer.Screen name="Completed" component={Completed} />
@@ -99,6 +111,7 @@ export default function App() {
         />
         <Stack.Screen name="Task" component={Task} />
         <Stack.Screen name="Rumah" component={Rumah} />
+        <Stack.Screen name="Salaries" component={Salaries} />
 
         <Stack.Screen name="ContactHome" component={ContactHome} options={{ title: 'Kontak Mahasiswa' }} />
 <Stack.Screen name="ContactDetail" component={ContactDetail} options={{ title: 'Detail Kontak' }} />
